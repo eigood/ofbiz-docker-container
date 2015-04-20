@@ -39,17 +39,16 @@ RUN chmod +rx /srv/ofbiz-localdev-base/bin/wp-cli
 
 COPY onbuild.sh /srv/ofbiz-localdev-base/bin/onbuild.sh
 COPY ofbiz-localdev-config/ /srv/ofbiz-localdev-base/config/
+COPY ofbiz-localdev-lib/ /srv/ofbiz-localdev-base/lib/
 
 # modify config file(s) of the packages installed above
 RUN rm /etc/nginx/sites-enabled/default && \
     echo "OFBIZ_HOME=/srv/ofbiz-app" >> /etc/default/ofbiz-init && \
     echo "JAVA_HOMES=/usr/lib/jvm/java-7-openjdk-amd64" >> /etc/default/ofbiz-init && \
     : sed -i 's,^#kernel.shmmax = .*,kernel.shmmax = 104857600,' /etc/sysctl.d/30-postgresql-shm.conf && \
-    sed -i 's,^CLASSPATH="\(.*\)"$,CLASSPATH="\1:/srv/ofbiz-localdev-base/config/ofbiz",' /etc/init.d/ofbiz-init && \
+    sed -i 's,^CLASSPATH="\(.*\)"$,CLASSPATH="\1:/srv/ofbiz-localdev-base/config/ofbiz:$(find /srv/ofbiz-localdev-base/lib -name "*.jar" -printf ":%p")",' /etc/init.d/ofbiz-init && \
     sed -i 's,^			\$CLASS ,org.ofbiz.base.start.CommonsDaemonStart,' /etc/init.d/ofbiz-init && \
     sed -i 's,run install delegator,run load-data delegator",' /etc/init.d/ofbiz-init && \
-    ln -sf /usr/share/java/postgresql-jdbc4.jar /srv/ofbiz-localdev-base/config/ofbiz/postgresql-jdbc4.jar && \
-    ln -sf /usr/share/java/mysql-connector-java.jar /srv/ofbiz-localdev-base/config/ofbiz/mysql-connector-java.jar && \
     echo "/.+@.+/ local-user@localhost" > /etc/postfix/virtual-regexp && \
     echo "virtual_maps = hash:/etc/postfix/virtual, regexp:/etc/postfix/virtual-regexp" >> /etc/postfix/main.cf && \
     touch /etc/postfix/virtual && postmap /etc/postfix/virtual && \
