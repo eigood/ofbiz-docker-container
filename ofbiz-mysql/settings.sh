@@ -31,8 +31,8 @@ MYSQL_WORDPRESS_DATABASE=wordpress
 MYSQL_WORDPRESS_USER=wordpress
 MYSQL_WORDPRESS_PASSWORD=wordpress
 
-WORDPRESS_ROOT=/srv/ofbiz-app/ofbiz-wp/www
-JS_APP_ROOT=/srv/ofbiz-app/ofbiz-wp/www
+WORDPRESS_ROOT=/srv/ofbiz-app/wordpress/www
+JS_APP_ROOT=/srv/ofbiz-app/wordpress/www
 JS_APP_PREFIX=
 
 OFBIZ_HTTP_PORT=8080
