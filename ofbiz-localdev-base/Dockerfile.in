@@ -43,7 +43,7 @@ COPY ofbiz-localdev-lib/ /srv/ofbiz-localdev-base/lib/
 
 # modify config file(s) of the packages installed above
 RUN rm /etc/nginx/sites-enabled/default && \
-    echo "OFBIZ_HOME=/srv/ofbiz-app" >> /etc/default/ofbiz-init && \
+    echo "OFBIZ_HOME=/srv/ofbiz-app/apache-ofbiz" >> /etc/default/ofbiz-init && \
     echo "JAVA_HOMES=/usr/lib/jvm/java-7-openjdk-amd64" >> /etc/default/ofbiz-init && \
     : sed -i 's,^#kernel.shmmax = .*,kernel.shmmax = 104857600,' /etc/sysctl.d/30-postgresql-shm.conf && \
     sed -i 's,^CLASSPATH="\(.*\)"$,CLASSPATH="\1:/srv/ofbiz-localdev-base/config/ofbiz:$(find /srv/ofbiz-localdev-base/lib -name "*.jar" -printf ":%p")",' /etc/init.d/ofbiz-init && \
