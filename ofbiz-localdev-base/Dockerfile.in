@@ -1,0 +1,66 @@
+###############################################################################
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+###############################################################################
+
+FROM @@DockerBase@@/docker-base
+
+COPY etc /etc/
+
+RUN DEBIAN_FRONTEND=noninteractive /srv/docker-base/bin/apt-get\
+    install -y mysql-server-5.5 -- \
+    install -y postgresql-9.1 -- \
+    install -y php5-fpm php5-mysqlnd php5-cli -- \
+    install -y nginx-extras -- \
+    install -y postfix roundcube dovecot-imapd -- \
+    install -y libmysql-java libpg-java openjdk-7-jdk -- \
+    install -y --force-yes ofbiz-init -- \
+    install -y sudo git vim less screen net-tools bsd-mailx -- \
+    install -y strace tcpdump -- \
+    && true
+
+COPY wp-cli.phar /srv/ofbiz-localdev-base/bin/wp-cli
+#ADD https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar /srv/ofbiz-app/bin/wp-cli
+RUN chmod +rx /srv/ofbiz-localdev-base/bin/wp-cli
+
+COPY onbuild.sh /srv/ofbiz-localdev-base/bin/onbuild.sh
+COPY ofbiz-localdev-config/ /srv/ofbiz-localdev-base/config/
+
+# modify config file(s) of the packages installed above
+RUN rm /etc/nginx/sites-enabled/default && \
+    echo "OFBIZ_HOME=/srv/ofbiz-app" >> /etc/default/ofbiz-init && \
+    echo "JAVA_HOMES=/usr/lib/jvm/java-7-openjdk-amd64" >> /etc/default/ofbiz-init && \
+    : sed -i 's,^#kernel.shmmax = .*,kernel.shmmax = 104857600,' /etc/sysctl.d/30-postgresql-shm.conf && \
+    sed -i 's,^CLASSPATH="\(.*\)"$,CLASSPATH="\1:/srv/ofbiz-localdev-base/config/ofbiz",' /etc/init.d/ofbiz-init && \
+    sed -i 's,^			\$CLASS ,org.ofbiz.base.start.CommonsDaemonStart,' /etc/init.d/ofbiz-init && \
+    sed -i 's,run install delegator,run load-data delegator",' /etc/init.d/ofbiz-init && \
+    ln -sf /usr/share/java/postgresql-jdbc4.jar /srv/ofbiz-localdev-base/config/ofbiz/postgresql-jdbc4.jar && \
+    ln -sf /usr/share/java/mysql-connector-java.jar /srv/ofbiz-localdev-base/config/ofbiz/mysql-connector-java.jar && \
+    echo "/.+@.+/ local-user@localhost" > /etc/postfix/virtual-regexp && \
+    echo "virtual_maps = hash:/etc/postfix/virtual, regexp:/etc/postfix/virtual-regexp" >> /etc/postfix/main.cf && \
+    touch /etc/postfix/virtual && postmap /etc/postfix/virtual && \
+    echo 'env[WP_HOME] = /' >> /etc/php5/fpm/pool.d/www.conf && \
+    echo 'env[WP_SITEURL] = /' >> /etc/php5/fpm/pool.d/www.conf && \
+    echo ofbiz:ofbiz | chpasswd && \
+    true
+
+ONBUILD COPY settings.sh /srv/ofbiz-localdev-base/config/settings.sh
+ONBUILD RUN /srv/ofbiz-localdev-base/bin/onbuild.sh db-init
+ONBUILD RUN /srv/ofbiz-localdev-base/bin/onbuild.sh nginx
+
+EXPOSE 80 443 5432 3306 8080 8081 8443
+
