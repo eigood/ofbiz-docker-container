@@ -205,6 +205,28 @@ _EOF_
 		_create_local_user
 		exec bash
 		;;
+
+	(override-settings)
+		echo "OVERRIDING SETTINGS"
+		while [ $# -gt 0 ]; do
+			echo "1=$1"
+			case "$1" in
+				(NGINX_API_PASSTHROUGH=*)
+					sed -i \
+						-e "s,@NGINX_API_PASSTHROUGH@,${1#*=},g" \
+						/srv/ofbiz-localdev-base/config/nginx.conf
+					;;
+				(OFBIZ_COMMONS_DAEMON_START=*)
+					echo "$1" >> /etc/default/ofbiz-init
+					;;
+				(*)
+					echo "Unknown setting: $1" 1>&2
+					exit 1
+					;;
+			esac
+			shift
+		done
+		;;
 esac
 
 

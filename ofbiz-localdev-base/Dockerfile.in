@@ -47,7 +47,7 @@ RUN rm /etc/nginx/sites-enabled/default && \
     echo "JAVA_HOMES=/usr/lib/jvm/java-7-openjdk-amd64" >> /etc/default/ofbiz-init && \
     : sed -i 's,^#kernel.shmmax = .*,kernel.shmmax = 104857600,' /etc/sysctl.d/30-postgresql-shm.conf && \
     sed -i 's,^CLASSPATH="\(.*\)"$,CLASSPATH="\1:/srv/ofbiz-localdev-base/config/ofbiz:$(find /srv/ofbiz-localdev-base/lib -name "*.jar" -printf ":%p")",' /etc/init.d/ofbiz-init && \
-    sed -i 's,^			\$CLASS ,org.ofbiz.base.start.CommonsDaemonStart,' /etc/init.d/ofbiz-init && \
+    sed -i 's,^			\$CLASS ,${OFBIZ_COMMONS_DAEMON_START} ,' /etc/init.d/ofbiz-init && \
     sed -i 's,run install delegator,run load-data delegator",' /etc/init.d/ofbiz-init && \
     echo "/.+@.+/ local-user@localhost" > /etc/postfix/virtual-regexp && \
     echo "virtual_maps = hash:/etc/postfix/virtual, regexp:/etc/postfix/virtual-regexp" >> /etc/postfix/main.cf && \
