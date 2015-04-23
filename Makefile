@@ -36,6 +36,7 @@ ofbiz-localdev-base: docker-base
 ofbiz-mysql: ofbiz-localdev-base
 ofbiz-postgresql: ofbiz-localdev-base
 
+.PHONY: apt-cacher
 apt-cacher: %: %/Dockerfile.in
 	sed \
 		-e "s,@@DockerBase@@,$(DOCKER_REPO_HOST)/$(DOCKER_REPO_GROUP),g" \
