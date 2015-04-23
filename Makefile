@@ -39,8 +39,8 @@ ofbiz-postgresql: ofbiz-localdev-base
 apt-cacher: %: %/Dockerfile.in
 	sed \
 		-e "s,@@DockerBase@@,$(DOCKER_REPO_HOST)/$(DOCKER_REPO_GROUP),g" \
-		< $< > $@.new
-	mv $@.new $@
+		< $*/Dockerfile.in > $*/Dockerfile.new
+	mv $*/Dockerfile.new $*/Dockerfile
 	docker build -t $(DOCKER_REPO_HOST)/$(DOCKER_REPO_GROUP)/$@ $@
 $(STANDARD_IMAGES): %: %/Dockerfile.in
 	set -x;sed \
