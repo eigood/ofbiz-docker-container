@@ -19,6 +19,7 @@
 
 .*.sw?
 
+apt-cacher/Dockerfile
 docker-base/Dockerfile
 ofbiz-localdev-base/Dockerfile
 ofbiz-localdev-base/wp-cli.phar
