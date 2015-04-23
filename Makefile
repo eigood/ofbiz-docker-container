@@ -38,9 +38,14 @@ ofbiz-postgresql: ofbiz-localdev-base
 
 .PHONY: apt-cacher
 apt-cacher: %: %/Dockerfile.in
-	sed \
-		-e "s,@@DockerBase@@,$(DOCKER_REPO_HOST)/$(DOCKER_REPO_GROUP),g" \
-		< $*/Dockerfile.in > $*/Dockerfile.new
+	set -x; ( \
+		sed -e "s,@@DockerBase@@,$(DOCKER_REPO_HOST)/$(DOCKER_REPO_GROUP),g" | \
+		if [ "x$(http_proxy)" = "x" ]; then \
+			sed -e "s,@@GlobalProxyEnv@@,,g"; \
+		else \
+			sed -e "s,@@GlobalProxyEnv@@,ENV http_proxy $(http_proxy),g"; \
+		fi; \
+	) < $*/Dockerfile.in > $*/Dockerfile.new
 	mv $*/Dockerfile.new $*/Dockerfile
 	docker build -t $(DOCKER_REPO_HOST)/$(DOCKER_REPO_GROUP)/$@ $@
 $(STANDARD_IMAGES): %: %/Dockerfile.in

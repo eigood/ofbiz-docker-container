@@ -19,6 +19,8 @@
 
 FROM @@DockerBase@@/debootstrap-wheezy
 
+@@GlobalProxyEnv@@
+
 VOLUME	["/var/cache/apt-cacher-ng"]
 
 RUN \
@@ -26,6 +28,7 @@ RUN \
 	&& apt-get install -y apt-cacher-ng \
 	&& apt-get clean \
 	&& rm /var/lib/apt/* /var/cache/apt/archives/* /var/cache/apt/* 2>/dev/null || true \
+	&& ( set -x; eval eval set -- $http_proxy; if [ $1 ]; then echo "Proxy: $1" >> /etc/apt-cacher-ng/acng.conf; fi ) \
 	&& true
 
 EXPOSE	3142
