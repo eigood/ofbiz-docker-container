@@ -185,7 +185,7 @@ case "$cmd" in
 		sudo -u www-data /srv/ofbiz-localdev-base/bin/wp-cli plugin activate content-backend ofbiz-backend
 		;;
 
-	(ofbiz-tables)
+	(ofbiz-*)
 		set -x
 		/etc/init.d/postgresql start
 		/etc/init.d/mysql start
@@ -194,22 +194,8 @@ case "$cmd" in
 <entity-engine-xml>
 </entity-engine-xml>
 _EOF_
-		/etc/init.d/ofbiz-init run load-data delegator=default file=/tmp/empty-seed.xml
+		/etc/init.d/ofbiz-init "$@"
 		rm /tmp/empty-seed.xml
-		;;
-
-	(ofbiz-seed)
-		set -x
-		/etc/init.d/postgresql start
-		/etc/init.d/mysql start
-		/etc/init.d/ofbiz-init run load-data readers=seed,seed-initial,ext
-		;;
-
-	(ofbiz-demo)
-		set -x
-		/etc/init.d/postgresql start
-		/etc/init.d/mysql start
-		/etc/init.d/ofbiz-init run load-data
 		;;
 
 	(snapshot)
