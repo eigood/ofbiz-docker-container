@@ -149,13 +149,19 @@ case "$cmd" in
 		/etc/init.d/mysql start
 		/etc/init.d/postgresql start
 
-		_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}
-		_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}olap
-		_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}tenant
-		_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}
-		_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}olap
-		_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}tenant
-		_db_helper mysql:import ${MYSQL_WORDPRESS_DATABASE}
+		if ! [ "z${POSTGRESQL_OFBIZ_DATABASE}" = z ]; then
+			_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}
+			_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}olap
+			_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}tenant
+		fi
+		if ! [ "z${MYSQL_OFBIZ_DATABASE}" = z ]; then
+			_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}
+			_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}olap
+			_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}tenant
+		fi
+		if ! [ "z${MYSQL_WORDPRESS_DATABASE}" = z ]; then
+			_db_helper mysql:import ${MYSQL_WORDPRESS_DATABASE}
+		fi
 		;;
 
 	(nginx)
