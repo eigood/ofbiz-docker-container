@@ -25,4 +25,6 @@ ofbiz-localdev-base/Dockerfile
 ofbiz-localdev-base/wp-cli.phar
 ofbiz-mysql/Dockerfile
 ofbiz-postgresql/Dockerfile
-
+roots/build.wheezy.debootstrap/
+roots/build.wheezy.tar
+roots/wheezy/root.tar.xz
