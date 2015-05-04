@@ -152,9 +152,9 @@ case "$cmd" in
 		_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}
 		_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}olap
 		_db_helper postgresql:import ${POSTGRESQL_OFBIZ_DATABASE}tenant
-		_db_helper postgresql:import ${MYSQL_OFBIZ_DATABASE}
-		_db_helper postgresql:import ${MYSQL_OFBIZ_DATABASE}olap
-		_db_helper postgresql:import ${MYSQL_OFBIZ_DATABASE}tenant
+		_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}
+		_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}olap
+		_db_helper mysql:import ${MYSQL_OFBIZ_DATABASE}tenant
 		_db_helper mysql:import ${MYSQL_WORDPRESS_DATABASE}
 		;;
 
