@@ -11,12 +11,17 @@ DO_SNAPSHOT=
 NGINX_API_PASSTHROUGH=api
 
 declare -a args=()
+declare -A docker_host_mapping=()
 while [[ $# -gt 0 ]]; do
 	arg="$1"
 	shift
 	case "$arg" in
 		(--flavor|--flavour)
 			FLAVOR="$1"
+			shift
+			;;
+		(--add-host)
+			docker_host_mapping[${1%:*}]=${1#*:}
 			shift
 			;;
 		(--ofbiz)
@@ -163,7 +168,21 @@ cmd_build() {
 }
 
 cmd_run() {
-	docker run --hostname localdev.ofbiz.apache.org -ti --entrypoint /srv/docker-base/bin/run-init --volumes-from "$data_container_name" --privileged -p 443:443 "$PREV" "$@" 
+	declare -a docker_run_args=(
+		--hostname localdev.ofbiz.apache.org
+		-ti
+		--entrypoint /srv/docker-base/bin/run-init
+		--volumes-from "$data_container_name"
+		--privileged
+		-p 443:443
+	)
+	if [[ ${#docker_host_mapping[*]} ]]; then
+		declare host
+		for host in "${!docker_host_mapping[@]}"; do
+			docker_run_args[${#docker_run_args[*]}]="--add-host=$host:${docker_host_mapping[$host]}"
+		done
+	fi
+	docker run "${docker_run_args[@]}" "$PREV" "$@"
 }
 
 cmd_clean() {
