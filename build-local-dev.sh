@@ -9,6 +9,7 @@ ofbiz_install_command=load-data
 OFBIZ_COMMONS_DAEMON_START=org.ofbiz.base.start.CommonsDaemonStart
 DO_SNAPSHOT=
 NGINX_API_PASSTHROUGH=api
+NAMING=directory
 
 declare -a args=()
 declare -A docker_host_mapping=()
@@ -16,6 +17,10 @@ while [[ $# -gt 0 ]]; do
 	arg="$1"
 	shift
 	case "$arg" in
+		(--naming)
+			NAMING="$1"
+			shift
+			;;
 		(--flavor|--flavour)
 			FLAVOR="$1"
 			shift
@@ -122,15 +127,33 @@ declare -A image_segment_args=(
 	[ofbiz-demo]="run $ofbiz_install_command"
 )
 git_hash=$(git rev-parse HEAD)
+git_PWD="${PWD/_/__}"
+git_PWD="${git_PWD//"/"/_-}"
 git_branch=$(git rev-parse --abbrev-ref HEAD)
+git_branch="${git_branch//_/__}"
+case "$NAMING" in
+	(directory)
+		git_naming="$git_PWD"
+		;;
+	(branch-directory)
+		git_naming="${git_branch}_.$git_PWD"
+		;;
+	(hash)
+		git_naming="$git_hash"
+		;;
+	(*)
+		echo "Invalid NAMING: $NAMING." 1>&2
+		exit 1
+		;;
+esac
 
 _set_data_container() {
-	data_container_name="$DEV_NAME.data.$git_hash"
+	data_container_name="$DEV_NAME.data.$git_naming"
 	data_container_uuid=$(_map_container_to_uuid "$data_container_name")
 	if [[ $1 = create && -z $data_container_uuid ]]; then
 		for ((i=${#image_segments[*]} - 1; i >= 0; i--)); do
 			PART="${image_segments[$i]}"
-			docker rmi "$DEV_NAME.$PART:$git_hash" 2>/dev/null || true
+			docker rmi "$DEV_NAME.$PART:$git_naming" 2>/dev/null || true
 		done
 		declare -a volumes=(
 	       		--volume "$HOME:/home/local-user"
@@ -160,7 +183,7 @@ cmd_build() {
 	for ((i=0; i < ${#image_segments[*]}; i++)); do
 		echo i=$i
 		PART="${image_segments[$i]}"
-		NEXT="$DEV_NAME.$PART:$git_hash"
+		NEXT="$DEV_NAME.$PART:$git_naming"
 		eval declare -a part_args=\("${image_segment_args[$PART]}"\)
 		_build_if_outdated "$PREV" "$NEXT" /srv/ofbiz-localdev-base/bin/onbuild.sh "$PART" "${part_args[@]}"
 		PREV="$NEXT"
@@ -191,10 +214,10 @@ cmd_clean() {
 	for ((i=${#image_segments[*]}-1; i >= 0;i--)); do
 		echo i=$i
 		PART="${image_segments[$i]}"
-		image_name="$DEV_NAME.$PART:$git_hash"
+		image_name="$DEV_NAME.$PART:$git_naming"
 		image_uuid=$(_map_image_to_uuid "$image_name")
 		if [[ $image_uuid ]]; then
-			#docker rmi -f "$DEV_NAME.$PART:$git_hash" 2>/dev/null || true
+			#docker rmi -f "$DEV_NAME.$PART:$git_naming" 2>/dev/null || true
 			docker rmi -f "$image_uuid" || true
 		fi
 	done
