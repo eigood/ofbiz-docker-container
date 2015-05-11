@@ -176,7 +176,8 @@ case "$cmd" in
 			/srv/ofbiz-localdev-base/config/ofbiz-backend.conf \
 			/srv/ofbiz-localdev-base/config/roundcube-backend.conf \
 			/srv/ofbiz-localdev-base/config/wordpress-backend.conf \
-			/srv/ofbiz-localdev-base/config/nginx.conf
+			/srv/ofbiz-localdev-base/config/app.conf \
+			/srv/ofbiz-localdev-base/config/frontend.conf
 
 		openssl req -new -nodes -x509 -subj "/C=US/ST=Texas/L=Dallas/CN=${CLIENT_DEV_SITENAME}" -days 3650 -keyout "/srv/ofbiz-localdev-base/config/ssl.key" -out "/srv/ofbiz-localdev-base/config/ssl.crt" -extensions v3_ca
 		;;
@@ -225,7 +226,7 @@ _EOF_
 					sed -i \
 						-e "s,@NGINX_API_PASSTHROUGH@,${1#*=},g" \
 						/srv/ofbiz-localdev-base/config/api-backend.conf \
-						/srv/ofbiz-localdev-base/config/nginx.conf
+						/srv/ofbiz-localdev-base/config/app.conf
 					;;
 				(OFBIZ_COMMONS_DAEMON_START=*)
 					echo "$1" >> /etc/default/ofbiz-init
