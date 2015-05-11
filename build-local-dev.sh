@@ -107,13 +107,6 @@ declare -a image_segments=(
 	local-user
 	override-settings
 )
-if [[ $DO_SNAPSHOT ]]; then
-	image_segments[${#image_segments[*]}]="db-import"
-else
-	image_segments[${#image_segments[*]}]="wordpress-tables"
-	image_segments[${#image_segments[*]}]="ofbiz-tables"
-	image_segments[${#image_segments[*]}]="ofbiz-demo"
-fi
 declare -A image_segment_args=(
 	[local-user]="\"$UID\" \"$(getent passwd "$UID" | cut -f 4 -d :)\" \"$(getent passwd "$UID" | cut -f 6 -d :)\""
 	[override-settings]="OFBIZ_COMMONS_DAEMON_START=\"${OFBIZ_COMMONS_DAEMON_START}\" NGINX_API_PASSTHROUGH=\"${NGINX_API_PASSTHROUGH}\""
@@ -121,6 +114,15 @@ declare -A image_segment_args=(
 	[ofbiz-seed]="run $ofbiz_install_command readers=seed,seed-initial,ext"
 	[ofbiz-demo]="run $ofbiz_install_command"
 )
+
+if [[ $DO_SNAPSHOT ]]; then
+	image_segments[${#image_segments[*]}]="db-import"
+else
+	image_segments[${#image_segments[*]}]="wordpress-tables"
+	image_segments[${#image_segments[*]}]="ofbiz-tables"
+	image_segments[${#image_segments[*]}]="ofbiz-demo"
+fi
+
 git_hash=$(git rev-parse HEAD)
 git_branch=$(git rev-parse --abbrev-ref HEAD)
 
