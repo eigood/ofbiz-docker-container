@@ -96,7 +96,13 @@ _build_if_outdated() {
 	if ! [[ $new_container_uuid ]]; then
 		return;
 	fi
-	docker start -ai $new_container_uuid
+	declare _image_exec="${image_segment_exec[$PART]}"
+	if [[ $_image_exec ]]; then
+		docker start $new_container_uuid
+		$_image_exec $new_container_uuid
+	else
+		docker start -ai $new_container_uuid
+	fi
 	docker stop $new_container_uuid
 	docker commit $new_container_uuid "$built_name"
 	docker rm $new_container_uuid
@@ -113,6 +119,8 @@ declare -A image_segment_args=(
 	[ofbiz-tables]="run $ofbiz_install_command delegator=default file=/tmp/empty-seed.xml"
 	[ofbiz-seed]="run $ofbiz_install_command readers=seed,seed-initial,ext"
 	[ofbiz-demo]="run $ofbiz_install_command"
+)
+declare -A image_segment_exec=(
 )
 
 if [[ $DO_SNAPSHOT ]]; then
