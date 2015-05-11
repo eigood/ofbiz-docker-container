@@ -239,6 +239,11 @@ _EOF_
 			shift
 		done
 		;;
+	(symlinks)
+		while read IGNORE; do
+			:
+		done
+		;;
 esac
 
 

@@ -12,6 +12,7 @@ NGINX_API_PASSTHROUGH=api
 
 declare -a args=()
 declare -A docker_host_mapping=()
+declare -A symlinks=()
 while [[ $# -gt 0 ]]; do
 	arg="$1"
 	shift
@@ -27,6 +28,10 @@ while [[ $# -gt 0 ]]; do
 		(--ofbiz)
 			PATH_OFBIZ="$1"
 			shift
+			;;
+		(--symlink)
+			symlinks["$2"]="$1"
+			shift 2
 			;;
 		(--old-ofbiz)
 			ofbiz_install_command=install
@@ -108,6 +113,15 @@ _build_if_outdated() {
 	docker rm $new_container_uuid
 }
 
+_exec_create_symlinks() {
+	declare link_name
+	for link_name in "${!symlinks[@]}"; do
+		: $link_name
+		docker exec "$1" mkdir -p "${link_name%/*}"
+		docker exec "$1" ln -sf "${symlinks[$link_name]}" "$link_name"
+	done
+}
+
 
 declare -a image_segments=(
 	local-user
@@ -119,10 +133,15 @@ declare -A image_segment_args=(
 	[ofbiz-tables]="run $ofbiz_install_command delegator=default file=/tmp/empty-seed.xml"
 	[ofbiz-seed]="run $ofbiz_install_command readers=seed,seed-initial,ext"
 	[ofbiz-demo]="run $ofbiz_install_command"
+	[symlinks]="symlinks"
 )
 declare -A image_segment_exec=(
+	[symlinks]="_exec_create_symlinks"
 )
 
+if [[ ${#symlinks[*]} -gt 0 ]]; then
+	image_segments[${#image_segments[*]}]=symlinks
+fi
 if [[ $DO_SNAPSHOT ]]; then
 	image_segments[${#image_segments[*]}]="db-import"
 else
