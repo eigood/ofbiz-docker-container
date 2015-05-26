@@ -43,6 +43,14 @@ COPY ofbiz-localdev-lib/ /srv/ofbiz-localdev-base/lib/
 
 # modify config file(s) of the packages installed above
 RUN rm /etc/nginx/sites-enabled/default && \
+    : fix aufs permission overlay issue && \
+    ( \
+        cd /var/lib/postgresql/9.1/main && \
+        rm server.crt server.key && \
+        cp /etc/ssl/certs/ssl-cert-snakeoil.pem server.crt && \
+        cp /etc/ssl/private/ssl-cert-snakeoil.key server.key && \
+        chown postgres:postgres server.crt server.key \
+    ) && \
     echo "OFBIZ_HOME=/srv/ofbiz-app/apache-ofbiz" >> /etc/default/ofbiz-init && \
     echo "JAVA_HOMES=/usr/lib/jvm/java-7-openjdk-amd64" >> /etc/default/ofbiz-init && \
     : sed -i 's,^#kernel.shmmax = .*,kernel.shmmax = 104857600,' /etc/sysctl.d/30-postgresql-shm.conf && \
