@@ -81,7 +81,7 @@ trap _onexit EXIT
 
 find "$TARGET" -lname "$TARGET*" -print0 | xargs -0 "$0" -fixlinks "$TARGET"
 TMP_IMAGE="$("$FAKEROOT" tar -C "$TARGET" -c . | docker import -)"
-TMP_CONTAINER="$(docker create -ti "$TMP_IMAGE" /bin/bash "/tmp/$(basename "$0")" -postsetup "$DIST")"
+TMP_CONTAINER="$(docker create --privileged -ti "$TMP_IMAGE" /bin/bash "/tmp/$(basename "$0")" -postsetup "$DIST")"
 docker start -ai "$TMP_CONTAINER"
 docker stop "$TMP_CONTAINER"
 docker export "$TMP_CONTAINER" > "$OUTPUT.new"
